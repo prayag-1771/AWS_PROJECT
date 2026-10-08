@@ -6,8 +6,8 @@ export default function StoragePage() {
     <>
       <PageHeader
         eyebrow="Amazon S3"
-        title="Storage"
-        subtitle="Design files, build artifacts and backups, kept in a private, versioned and encrypted bucket."
+        title="Materials"
+        subtitle="Notes, slides, assignments and past papers, kept in a private, versioned and encrypted bucket."
       />
 
       <StorageBrowser />

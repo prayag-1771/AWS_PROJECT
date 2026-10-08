@@ -3,13 +3,7 @@ import { ApiError } from "./api";
 
 export const bucket = process.env.S3_BUCKET;
 
-export const folders = [
-  "projects",
-  "modules",
-  "artifacts",
-  "architecture",
-  "backups",
-];
+export const folders = ["notes", "slides", "assignments", "papers", "other"];
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || "ap-south-1",

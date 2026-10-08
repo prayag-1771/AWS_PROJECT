@@ -11,7 +11,7 @@ type StoredFile = {
   lastModified: string;
 };
 
-const folders = ["projects", "modules", "artifacts", "architecture", "backups"];
+const folders = ["notes", "slides", "assignments", "papers", "other"];
 
 export default function StorageBrowser() {
   const [files, setFiles] = useState<StoredFile[]>([]);
@@ -92,7 +92,7 @@ export default function StorageBrowser() {
           <div className="form-grid">
             <label>
               Folder
-              <select name="folder" defaultValue="modules">
+              <select name="folder" defaultValue="notes">
                 {folders.map((option) => (
                   <option key={option}>{option}</option>
                 ))}
@@ -116,9 +116,9 @@ export default function StorageBrowser() {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2>Stored Files</h2>
+            <h2>Study Materials</h2>
             <p>
-              {files.length} {files.length === 1 ? "object" : "objects"} ·{" "}
+              {files.length} {files.length === 1 ? "file" : "files"} ·{" "}
               {formatBytes(totalSize)}
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function StorageBrowser() {
               <Icon name="file" size={22} />
             </div>
             <strong>{loading ? "Loading files..." : "No files here yet"}</strong>
-            {!loading && <span>Upload a file to store it in Amazon S3.</span>}
+            {!loading && <span>Upload notes, slides or past papers.</span>}
           </div>
         )}
 
