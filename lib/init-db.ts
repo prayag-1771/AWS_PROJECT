@@ -13,3 +13,16 @@ export async function initDatabase() {
     );
   `);
 }
+
+let ready: Promise<void> | null = null;
+
+export function ensureDatabase() {
+  if (!ready) {
+    ready = initDatabase().catch((error) => {
+      ready = null;
+      throw error;
+    });
+  }
+
+  return ready;
+}

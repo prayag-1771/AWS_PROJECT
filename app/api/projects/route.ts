@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { ensureDatabase } from "@/lib/init-db";
+import { listProjects } from "@/lib/projects";
 
 export async function GET() {
   try {
-    const result = await pool.query(
-      "SELECT * FROM projects ORDER BY created_at DESC"
-    );
-
-    return NextResponse.json(result.rows);
+    return NextResponse.json(await listProjects());
   } catch (error) {
     console.error(error);
 
@@ -30,6 +28,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    await ensureDatabase();
 
     const result = await pool.query(
       `INSERT INTO projects

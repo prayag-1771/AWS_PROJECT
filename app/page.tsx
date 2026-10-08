@@ -1,19 +1,47 @@
 import Link from "next/link";
+import { listProjects, Project } from "@/lib/projects";
+import { modules } from "@/lib/modules";
 
-const stats = [
-  { label: "Projects", value: "12", icon: "◈" },
-  { label: "Active Modules", value: "38", icon: "◆" },
-  { label: "Deployments", value: "24", icon: "▲" },
-  { label: "System Health", value: "99.8%", icon: "●" },
-];
+export const dynamic = "force-dynamic";
 
-const projects = [
-  { name: "E-Commerce Platform", environment: "Production", status: "Active" },
-  { name: "Student Portal", environment: "Development", status: "Active" },
-  { name: "Analytics Engine", environment: "Staging", status: "Deploying" },
-];
+async function loadProjects(): Promise<Project[] | null> {
+  try {
+    return await listProjects();
+  } catch (error) {
+    console.error(error);
 
-export default function Dashboard() {
+    return null;
+  }
+}
+
+export default async function Dashboard() {
+  const projects = await loadProjects();
+
+  const activeModules = modules.filter(
+    ([, , status]) => status === "Running"
+  ).length;
+
+  const stats = [
+    {
+      label: "Projects",
+      value: projects ? String(projects.length) : "–",
+      icon: "◈",
+    },
+    { label: "Active Modules", value: String(activeModules), icon: "◆" },
+    {
+      label: "Environment",
+      value: process.env.APP_ENV || "Development",
+      icon: "▲",
+    },
+    {
+      label: "System Status",
+      value: projects ? "Healthy" : "Degraded",
+      icon: "●",
+    },
+  ];
+
+  const recent = (projects || []).slice(0, 5);
+
   return (
     <main className="app">
       <aside className="sidebar">
@@ -78,11 +106,31 @@ export default function Dashboard() {
           </div>
 
           <div className="project-list">
-            {projects.map((project) => (
-              <div className="project-row" key={project.name}>
+            {!projects && (
+              <div className="project-row">
+                <div>
+                  <strong>Database unavailable</strong>
+                  <span>Projects could not be loaded.</span>
+                </div>
+              </div>
+            )}
+
+            {projects && recent.length === 0 && (
+              <div className="project-row">
+                <div>
+                  <strong>No projects yet</strong>
+                  <span>Create your first project to get started.</span>
+                </div>
+              </div>
+            )}
+
+            {recent.map((project) => (
+              <div className="project-row" key={project.id}>
                 <div>
                   <strong>{project.name}</strong>
-                  <span>{project.environment}</span>
+                  <span>
+                    {project.environment} · {project.region}
+                  </span>
                 </div>
 
                 <span

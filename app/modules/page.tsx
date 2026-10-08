@@ -1,12 +1,6 @@
 import Link from "next/link";
-
-const modules = [
-  ["Authentication", "API", "Running"],
-  ["User Service", "Microservice", "Running"],
-  ["Payment Service", "Microservice", "Stopped"],
-  ["Analytics", "Worker", "Running"],
-  ["Notification Service", "API", "Running"],
-];
+import { modules } from "@/lib/modules";
+import StoragePanel from "./StoragePanel";
 
 export default function ModulesPage() {
   return (
@@ -85,6 +79,8 @@ export default function ModulesPage() {
             ))}
           </div>
         </div>
+
+        <StoragePanel />
       </section>
     </main>
   );
