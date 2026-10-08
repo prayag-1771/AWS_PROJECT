@@ -1,57 +1,18 @@
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
-import { ensureDatabase } from "@/lib/init-db";
-import { listProjects } from "@/lib/projects";
+import { handle, readJson } from "@/lib/api";
+import { logActivity } from "@/lib/activity";
+import { createProject, listProjects } from "@/lib/projects";
+import { parseProject } from "@/lib/validate";
 
-export async function GET() {
-  try {
-    return NextResponse.json(await listProjects());
-  } catch (error) {
-    console.error(error);
+export const GET = handle(async () => {
+  return NextResponse.json(await listProjects());
+});
 
-    return NextResponse.json(
-      { error: "Failed to fetch projects" },
-      { status: 500 }
-    );
-  }
-}
+export const POST = handle(async (request: Request) => {
+  const input = parseProject(await readJson(request));
+  const project = await createProject(input);
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
+  await logActivity("created", "project", project.name);
 
-    const { name, environment, architecture, region } = body;
-
-    if (!name) {
-      return NextResponse.json(
-        { error: "Project name is required" },
-        { status: 400 }
-      );
-    }
-
-    await ensureDatabase();
-
-    const result = await pool.query(
-      `INSERT INTO projects
-       (name, environment, architecture, region, status)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [
-        name,
-        environment,
-        architecture,
-        region,
-        "Active",
-      ]
-    );
-
-    return NextResponse.json(result.rows[0], { status: 201 });
-  } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      { error: "Failed to create project" },
-      { status: 500 }
-    );
-  }
-}
+  return NextResponse.json(project, { status: 201 });
+});
