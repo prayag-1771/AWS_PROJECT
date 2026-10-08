@@ -1,23 +1,24 @@
-# CloudNativeHub
+# CloudNativeHub Study Planner
 
-A cloud-native platform for designing, deploying and managing application
-modules, built to run on AWS.
+A cloud-native study planner, built to run on AWS.
 
-Each **project** is an application. Each project is made of **modules**
-(services), and every module carries its own architecture design across nine
-aspects: deployment model, database, storage, networking, security,
-scalability, monitoring, backup and disaster recovery. The platform draws the
-project's architecture from those designs.
+Each **course** is divided into **modules**, and every module has a checklist of
+**topics**. Ticking topics off drives the progress of the module and the course.
+**Deadlines** track assignments, quizzes, labs, projects and exams, and
+**materials** (notes, slides, past papers) are stored in Amazon S3.
 
 ## Features
 
-- **Dashboard** with live counts, platform health checks and an activity feed
-- **Projects**: create, search, filter, edit and delete
-- **Modules**: a nine-aspect architecture design per module, with a generated
-  architecture diagram per project
-- **Storage**: upload, download and delete files in a private Amazon S3 bucket
-- **Architecture**: how the platform itself is deployed, with live service status
-- **Settings** stored in the database and used as defaults for new projects
+- **Dashboard** with overall progress, progress per course, upcoming deadlines,
+  live platform health checks and an activity feed
+- **Courses**: create, search, filter, edit and delete
+- **Modules**: the units of a course, each with planned study hours and a topic
+  checklist
+- **Deadlines**: per course and across all courses, with overdue and due-soon
+  highlighting
+- **Materials**: upload, download and delete files in a private Amazon S3 bucket
+- **Architecture**: how the planner is deployed, with live service status
+- **Settings** stored in the database and used as defaults across the planner
 
 ## Stack
 
@@ -46,9 +47,9 @@ The application is configured through environment variables.
 | --- | --- |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL connection |
 | `DB_SSL` | Set to `false` only for a local database without TLS |
-| `S3_BUCKET` | Bucket used by the Storage page |
+| `S3_BUCKET` | Bucket used by the Materials page |
 | `AWS_REGION` | Region of the bucket (default `ap-south-1`) |
-| `APP_ENV` | Environment name shown on the dashboard |
+| `APP_TIMEZONE` | Time zone used for "today" when counting days to a deadline (default `Asia/Kolkata`) |
 
 On AWS the task role supplies S3 credentials; no access keys are configured.
 The database tables are created automatically on first use.
@@ -96,7 +97,9 @@ if the new task fails its health check.
 | --- | --- |
 | `/api/health` | `GET` (load balancer health check) |
 | `/api/status` | `GET` (database and storage checks) |
-| `/api/projects`, `/api/projects/:id` | `GET`, `POST`, `PATCH`, `DELETE` |
+| `/api/courses`, `/api/courses/:id` | `GET`, `POST`, `PATCH`, `DELETE` |
 | `/api/modules`, `/api/modules/:id` | `GET`, `POST`, `PATCH`, `DELETE` |
+| `/api/topics`, `/api/topics/:id` | `POST`, `PATCH`, `DELETE` |
+| `/api/deadlines`, `/api/deadlines/:id` | `GET`, `POST`, `PATCH`, `DELETE` |
 | `/api/files`, `/api/files/object?key=` | `GET`, `POST`, `DELETE` |
 | `/api/settings` | `GET`, `PUT` |
