@@ -6,9 +6,10 @@ import Icon from "./Icon";
 
 const links = [
   { href: "/", label: "Dashboard", icon: "dashboard" },
-  { href: "/projects", label: "Projects", icon: "projects" },
+  { href: "/courses", label: "Courses", icon: "courses" },
   { href: "/modules", label: "Modules", icon: "modules" },
-  { href: "/storage", label: "Storage", icon: "storage" },
+  { href: "/deadlines", label: "Deadlines", icon: "deadlines" },
+  { href: "/storage", label: "Materials", icon: "file" },
   { href: "/architecture", label: "Architecture", icon: "architecture" },
   { href: "/settings", label: "Settings", icon: "settings" },
 ];
@@ -22,7 +23,10 @@ export default function Sidebar() {
         <div className="brand-icon">
           <Icon name="cloud" />
         </div>
-        <span>CloudNativeHub</span>
+        <span>
+          CloudNativeHub
+          <small>Study Planner</small>
+        </span>
       </Link>
 
       <nav>

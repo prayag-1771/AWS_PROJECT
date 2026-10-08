@@ -42,6 +42,24 @@ const paths: Record<string, ReactNode> = {
       <circle cx="18" cy="18" r="2" />
     </>
   ),
+  courses: (
+    <>
+      <path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z" />
+      <path d="M4 20a2 2 0 0 0 2 2h13v-4" />
+    </>
+  ),
+  deadlines: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
   plus: <path d="M12 5v14M5 12h14" />,
   download: <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />,
   upload: <path d="M12 21V9M7 14l5-5 5 5M5 3h14" />,

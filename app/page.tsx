@@ -1,29 +1,34 @@
 import Link from "next/link";
+import DeadlineList from "./components/DeadlineList";
 import Icon from "./components/Icon";
 import PageHeader from "./components/PageHeader";
+import ProgressBar from "./components/ProgressBar";
 import SeedButton from "./components/SeedButton";
-import StatusBadge from "./components/StatusBadge";
-import { Activity, listActivity } from "@/lib/activity";
+import { listActivity } from "@/lib/activity";
+import { listCourses } from "@/lib/courses";
+import { listDeadlines } from "@/lib/deadlines";
 import { timeAgo } from "@/lib/format";
-import { listModules, Module } from "@/lib/modules";
-import { ENVIRONMENTS } from "@/lib/options";
-import { listProjects, Project } from "@/lib/projects";
+import { listModules } from "@/lib/modules";
+import { describeDeadline, percent } from "@/lib/progress";
+import { getSettings } from "@/lib/settings";
 import { systemChecks } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
 
-type Data = { projects: Project[]; modules: Module[]; activity: Activity[] };
-
 // The dashboard still renders, in a degraded state, when the database is down.
-async function loadData(): Promise<Data | null> {
+async function loadData() {
   try {
-    const [projects, modules, activity] = await Promise.all([
-      listProjects(),
-      listModules(),
-      listActivity(),
-    ]);
+    const [courses, modules, deadlines, activity, settings] = await Promise.all(
+      [
+        listCourses(),
+        listModules(),
+        listDeadlines(),
+        listActivity(),
+        getSettings(),
+      ]
+    );
 
-    return { projects, modules, activity };
+    return { courses, modules, deadlines, activity, settings };
   } catch (error) {
     console.error(error);
 
@@ -34,56 +39,65 @@ async function loadData(): Promise<Data | null> {
 export default async function Dashboard() {
   const [data, checks] = await Promise.all([loadData(), systemChecks()]);
 
-  const projects = data?.projects || [];
+  const courses = data?.courses || [];
   const modules = data?.modules || [];
   const activity = data?.activity || [];
+  const windowDays = parseInt(data?.settings.deadline_window || "7", 10);
 
-  const active = projects.filter((item) => item.status === "Active").length;
-  const running = modules.filter((item) => item.status === "Running").length;
-  const up = checks.filter((check) => check.healthy).length;
-  const healthy = up === checks.length;
+  const open = (data?.deadlines || [])
+    .map(describeDeadline)
+    .filter((item) => !item.done);
+  const dueSoon = open.filter((item) => item.days <= windowDays);
+  const overdue = open.filter((item) => item.days < 0).length;
+
+  const topics = courses.reduce((sum, item) => sum + item.topic_count, 0);
+  const done = courses.reduce((sum, item) => sum + item.done_count, 0);
+  const finished = modules.filter(
+    (item) => item.topic_count > 0 && item.done_count === item.topic_count
+  ).length;
+  const ongoing = courses.filter((item) => item.status === "Ongoing").length;
 
   const stats = [
     {
-      label: "Projects",
-      value: data ? String(projects.length) : "–",
-      note: `${active} active`,
-      icon: "projects",
+      label: "Courses",
+      value: data ? String(courses.length) : "–",
+      note: `${ongoing} ongoing`,
+      icon: "courses",
       color: "",
     },
     {
-      label: "Modules",
-      value: data ? String(modules.length) : "–",
-      note: `${running} running`,
+      label: "Modules Completed",
+      value: data ? `${finished} of ${modules.length}` : "–",
+      note: "all topics ticked off",
       icon: "modules",
       color: "blue",
     },
     {
-      label: "Environment",
-      value: process.env.APP_ENV || "Development",
-      note: process.env.AWS_REGION || "ap-south-1",
-      icon: "globe",
-      color: "amber",
+      label: "Overall Progress",
+      value: data ? `${percent(done, topics)}%` : "–",
+      note: `${done} of ${topics} topics`,
+      icon: "check",
+      color: "green",
     },
     {
-      label: "System Status",
-      value: healthy ? "Healthy" : "Degraded",
-      note: `${up} of ${checks.length} services up`,
-      icon: "activity",
-      color: healthy ? "green" : "red",
+      label: `Due in ${windowDays} Days`,
+      value: data ? String(dueSoon.length) : "–",
+      note: overdue ? `${overdue} overdue` : "nothing overdue",
+      icon: "clock",
+      color: overdue ? "red" : "amber",
     },
   ];
 
   return (
     <>
       <PageHeader
-        eyebrow="Cloud Platform"
+        eyebrow="Study Planner"
         title="Dashboard"
-        subtitle="Projects, modules and platform health at a glance."
+        subtitle="Your courses, progress and upcoming deadlines at a glance."
       >
-        <Link className="primary-button" href="/projects/new">
+        <Link className="primary-button" href="/courses/new">
           <Icon name="plus" size={16} />
-          New Project
+          New Course
         </Link>
       </PageHeader>
 
@@ -106,63 +120,83 @@ export default async function Dashboard() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2>Recent Projects</h2>
-              <p>The applications created most recently.</p>
+              <h2>Course Progress</h2>
+              <p>Topics completed in each course.</p>
             </div>
 
-            <Link href="/projects">View all →</Link>
+            <Link href="/courses">View all →</Link>
           </div>
 
           <div className="project-list">
             {!data && (
               <div className="empty-state">
                 <strong>Database unavailable</strong>
-                <span>Projects could not be loaded.</span>
+                <span>Courses could not be loaded.</span>
               </div>
             )}
 
-            {data && projects.length === 0 && (
+            {data && courses.length === 0 && (
               <div className="empty-state">
                 <div className="empty-icon">
-                  <Icon name="projects" size={22} />
+                  <Icon name="courses" size={22} />
                 </div>
-                <strong>No projects yet</strong>
+                <strong>No courses yet</strong>
                 <span>
-                  Create your first project, or load sample data to explore the
-                  platform.
+                  Add your first course, or load sample data to explore the
+                  planner.
                 </span>
                 <div className="empty-actions">
-                  <Link className="primary-button" href="/projects/new">
+                  <Link className="primary-button" href="/courses/new">
                     <Icon name="plus" size={16} />
-                    New Project
+                    New Course
                   </Link>
                   <SeedButton />
                 </div>
               </div>
             )}
 
-            {projects.slice(0, 5).map((project) => (
+            {courses.slice(0, 6).map((course) => (
               <Link
                 className="project-row"
-                href={`/projects/${project.id}`}
-                key={project.id}
+                href={`/courses/${course.id}`}
+                key={course.id}
               >
                 <div className="row-main">
-                  <strong>{project.name}</strong>
+                  <strong>{course.name}</strong>
                   <span>
-                    {project.environment} · {project.region} ·{" "}
-                    {project.module_count}{" "}
-                    {project.module_count === 1 ? "module" : "modules"}
+                    {course.module_count}{" "}
+                    {course.module_count === 1 ? "module" : "modules"} ·{" "}
+                    {course.done_count} of {course.topic_count} topics
                   </span>
                 </div>
 
-                <StatusBadge status={project.status} />
+                <ProgressBar
+                  done={course.done_count}
+                  total={course.topic_count}
+                />
               </Link>
             ))}
           </div>
         </section>
 
         <div>
+          <section className="panel">
+            <div className="panel-header">
+              <div>
+                <h2>Upcoming Deadlines</h2>
+                <p>The next things due.</p>
+              </div>
+
+              <Link href="/deadlines">View all →</Link>
+            </div>
+
+            <DeadlineList
+              items={open.slice(0, 5)}
+              showCourse
+              emptyText="Nothing is due. Enjoy the break."
+            />
+          </section>
+
           <section className="panel">
             <div className="panel-header">
               <div>
@@ -187,35 +221,6 @@ export default async function Dashboard() {
               </div>
             ))}
           </section>
-
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>Projects by Environment</h2>
-              </div>
-            </div>
-
-            <div style={{ padding: "10px 0" }}>
-              {ENVIRONMENTS.map((environment) => {
-                const count = projects.filter(
-                  (project) => project.environment === environment
-                ).length;
-                const share = projects.length
-                  ? (count / projects.length) * 100
-                  : 0;
-
-                return (
-                  <div className="bar-row" key={environment}>
-                    <span>{environment}</span>
-                    <div className="bar">
-                      <span style={{ width: `${share}%` }} />
-                    </div>
-                    <strong>{count}</strong>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
         </div>
       </div>
 
@@ -223,7 +228,7 @@ export default async function Dashboard() {
         <div className="panel-header">
           <div>
             <h2>Recent Activity</h2>
-            <p>Changes made on the platform.</p>
+            <p>What you have done lately.</p>
           </div>
         </div>
 

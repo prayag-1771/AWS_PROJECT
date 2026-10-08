@@ -12,7 +12,7 @@ export default async function SettingsPage() {
       <PageHeader
         eyebrow="Platform"
         title="Settings"
-        subtitle="Defaults applied across the platform, stored in the database."
+        subtitle="Planner defaults, stored in the database."
       />
 
       <SettingsForm settings={settings} options={SETTING_OPTIONS} />

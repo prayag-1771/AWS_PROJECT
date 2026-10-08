@@ -13,12 +13,12 @@ const layers = [
   [
     "Database",
     "Amazon RDS for PostgreSQL",
-    "Projects, modules, settings and activity are stored in a private, encrypted PostgreSQL instance.",
+    "Courses, modules, topics, deadlines and settings are stored in a private, encrypted PostgreSQL instance.",
   ],
   [
     "Storage",
     "Amazon S3",
-    "Files are kept in a private bucket with versioning, default encryption and Block Public Access.",
+    "Study materials are kept in a private bucket with versioning, default encryption and Block Public Access.",
   ],
   [
     "Networking",
@@ -60,7 +60,7 @@ export default async function ArchitecturePage() {
       <PageHeader
         eyebrow="AWS Cloud"
         title="Architecture"
-        subtitle="How CloudNativeHub itself is deployed on AWS in the Mumbai Region."
+        subtitle="How the study planner is deployed on AWS in the Mumbai Region."
       />
 
       <div className="panel" style={{ marginTop: 0 }}>

@@ -1,49 +1,40 @@
 import { ApiError } from "./api";
-import {
-  ARCHITECTURES,
-  BACKUPS,
-  DATABASES,
-  DEPLOYMENTS,
-  DISASTER_RECOVERY,
-  ENVIRONMENTS,
-  MODULE_STATUSES,
-  MODULE_TYPES,
-  MONITORING,
-  NETWORKING,
-  PROJECT_STATUSES,
-  REGIONS,
-  SECURITY,
-  STORAGES,
-} from "./options";
+import { COURSE_STATUSES, DEADLINE_TYPES, SEMESTERS } from "./options";
 
-export type ProjectInput = {
+export type CourseInput = {
   name: string;
-  description: string;
-  environment: string;
-  architecture: string;
-  region: string;
+  code: string;
+  instructor: string;
+  semester: string;
+  credits: number;
   status: string;
+  description: string;
 };
 
 export type ModuleInput = {
-  project_id: number;
+  course_id: number;
+  position: number;
   name: string;
   description: string;
+  planned_hours: number;
+};
+
+export type TopicInput = {
+  module_id: number;
+  title: string;
+};
+
+export type DeadlineInput = {
+  course_id: number;
+  title: string;
   type: string;
-  status: string;
-  deployment: string;
-  database_engine: string;
-  storage: string;
-  networking: string;
-  security: string;
-  min_tasks: number;
-  max_tasks: number;
-  monitoring: string;
-  backup: string;
-  disaster_recovery: string;
+  due_date: string;
+  done: boolean;
 };
 
 type Body = Record<string, unknown>;
+
+const MAX_ID = 2147483647;
 
 function text(value: unknown, label: string, max: number, required = true) {
   const result = typeof value === "string" ? value.trim() : "";
@@ -70,51 +61,71 @@ function oneOf(value: unknown, options: string[], label: string) {
 function integer(value: unknown, label: string, min: number, max: number) {
   const result = Number(value);
 
-  if (!Number.isInteger(result) || result < min || result > max) {
+  if (value === "" || !Number.isInteger(result) || result < min || result > max) {
     throw new ApiError(`${label} must be a whole number from ${min} to ${max}`);
   }
 
   return result;
 }
 
-export function parseProject(body: Body): ProjectInput {
+function date(value: unknown, label: string) {
+  const result = typeof value === "string" ? value : "";
+  const parsed = new Date(`${result}T00:00:00Z`);
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(result) ||
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== result
+  ) {
+    throw new ApiError(`${label} must be a valid date`);
+  }
+
+  return result;
+}
+
+export function flag(value: unknown, label: string) {
+  if (typeof value !== "boolean") {
+    throw new ApiError(`${label} must be true or false`);
+  }
+
+  return value;
+}
+
+export function parseCourse(body: Body): CourseInput {
   return {
-    name: text(body.name, "Project name", 150),
+    name: text(body.name, "Course name", 150),
+    code: text(body.code, "Course code", 20, false),
+    instructor: text(body.instructor, "Instructor", 120, false),
+    semester: oneOf(body.semester, SEMESTERS, "Semester"),
+    credits: integer(body.credits, "Credits", 1, 10),
+    status: oneOf(body.status ?? "Ongoing", COURSE_STATUSES, "Status"),
     description: text(body.description, "Description", 1000, false),
-    environment: oneOf(body.environment, ENVIRONMENTS, "Environment"),
-    architecture: oneOf(body.architecture, ARCHITECTURES, "Architecture"),
-    region: oneOf(body.region, REGIONS, "AWS Region"),
-    status: oneOf(body.status ?? "Active", PROJECT_STATUSES, "Status"),
   };
 }
 
 export function parseModule(body: Body): ModuleInput {
-  const min_tasks = integer(body.min_tasks, "Minimum tasks", 0, 100);
-  const max_tasks = integer(body.max_tasks, "Maximum tasks", 1, 100);
-
-  if (max_tasks < min_tasks) {
-    throw new ApiError("Maximum tasks cannot be lower than minimum tasks");
-  }
-
   return {
-    project_id: integer(body.project_id, "Project", 1, 2147483647),
+    course_id: integer(body.course_id, "Course", 1, MAX_ID),
+    position: integer(body.position, "Module number", 1, 50),
     name: text(body.name, "Module name", 150),
     description: text(body.description, "Description", 1000, false),
-    type: oneOf(body.type, MODULE_TYPES, "Module type"),
-    status: oneOf(body.status ?? "Running", MODULE_STATUSES, "Status"),
-    deployment: oneOf(body.deployment, DEPLOYMENTS, "Deployment model"),
-    database_engine: oneOf(body.database_engine, DATABASES, "Database"),
-    storage: oneOf(body.storage, STORAGES, "Storage"),
-    networking: oneOf(body.networking, NETWORKING, "Networking"),
-    security: oneOf(body.security, SECURITY, "Security"),
-    min_tasks,
-    max_tasks,
-    monitoring: oneOf(body.monitoring, MONITORING, "Monitoring"),
-    backup: oneOf(body.backup, BACKUPS, "Backup"),
-    disaster_recovery: oneOf(
-      body.disaster_recovery,
-      DISASTER_RECOVERY,
-      "Disaster recovery"
-    ),
+    planned_hours: integer(body.planned_hours, "Planned hours", 0, 200),
+  };
+}
+
+export function parseTopic(body: Body): TopicInput {
+  return {
+    module_id: integer(body.module_id, "Module", 1, MAX_ID),
+    title: text(body.title, "Topic", 200),
+  };
+}
+
+export function parseDeadline(body: Body): DeadlineInput {
+  return {
+    course_id: integer(body.course_id, "Course", 1, MAX_ID),
+    title: text(body.title, "Title", 200),
+    type: oneOf(body.type, DEADLINE_TYPES, "Type"),
+    due_date: date(body.due_date, "Due date"),
+    done: flag(body.done ?? false, "Done"),
   };
 }

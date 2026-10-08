@@ -1,14 +1,12 @@
 import pool from "./db";
 import { ApiError } from "./api";
 import { ensureDatabase } from "./init-db";
-import { ENVIRONMENTS, REGIONS } from "./options";
+import { SEMESTERS } from "./options";
 
 export const SETTING_OPTIONS = {
-  default_region: REGIONS,
-  default_environment: ENVIRONMENTS,
-  deployment_strategy: ["Rolling Deployment", "Blue / Green", "Canary"],
-  monitoring: ["Enabled", "Disabled"],
-  notifications: ["All events", "Important events only", "Disabled"],
+  default_semester: SEMESTERS,
+  default_credits: ["1", "2", "3", "4", "5"],
+  deadline_window: ["3 days", "7 days", "14 days"],
 };
 
 export type Settings = Record<keyof typeof SETTING_OPTIONS, string>;
@@ -16,11 +14,9 @@ export type Settings = Record<keyof typeof SETTING_OPTIONS, string>;
 const KEYS = Object.keys(SETTING_OPTIONS) as (keyof Settings)[];
 
 export const DEFAULT_SETTINGS: Settings = {
-  default_region: "Asia Pacific (Mumbai)",
-  default_environment: "Development",
-  deployment_strategy: "Rolling Deployment",
-  monitoring: "Enabled",
-  notifications: "Important events only",
+  default_semester: "Fall Semester",
+  default_credits: "3",
+  deadline_window: "7 days",
 };
 
 export async function getSettings(): Promise<Settings> {

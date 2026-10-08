@@ -914,6 +914,147 @@ form button {
   height: auto;
 }
 
+/* ---------- progress, checklists and inline forms ---------- */
+
+.brand small {
+  display: block;
+  margin-top: 1px;
+  color: #8491a8;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 170px;
+}
+
+.progress .bar {
+  flex: 1;
+}
+
+.progress strong {
+  width: 38px;
+  color: var(--text-soft);
+  font-size: 12px;
+  text-align: right;
+}
+
+.progress.wide {
+  width: 100%;
+}
+
+.bar > span.complete {
+  background: #16a34a;
+}
+
+.checklist {
+  display: grid;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  cursor: default;
+}
+
+label.check-row {
+  cursor: pointer;
+}
+
+.check-row:last-child {
+  border-bottom: 0;
+}
+
+.check-row:hover {
+  background: var(--surface-muted);
+}
+
+.check-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.check-row .row-main {
+  flex: 1;
+}
+
+.check-row strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.check-row .row-main > span {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.check-row .row-main a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.check-row.done strong {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.icon-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.inline-form {
+  gap: 10px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface-muted);
+}
+
+.inline-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.inline-fields input,
+.inline-fields select {
+  width: auto;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.inline-fields .grow {
+  min-width: 220px;
+  flex: 1;
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 1100px) {
@@ -988,5 +1129,10 @@ form button {
   .form-grid,
   .aspect-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

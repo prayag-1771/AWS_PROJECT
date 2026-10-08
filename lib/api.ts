@@ -54,3 +54,14 @@ export async function readJson(request: Request) {
 
   return body as Record<string, unknown>;
 }
+
+// A foreign-key failure on insert or update means the parent row is gone.
+export function missingParent(label: string) {
+  return (error: unknown): never => {
+    if ((error as { code?: string })?.code === "23503") {
+      throw new ApiError(`${label} not found`);
+    }
+
+    throw error;
+  };
+}

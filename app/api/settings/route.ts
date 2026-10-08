@@ -10,7 +10,7 @@ export const GET = handle(async () => {
 export const PUT = handle(async (request: Request) => {
   const settings = await saveSettings(await readJson(request));
 
-  await logActivity("updated", "settings", "Platform settings");
+  await logActivity("updated", "settings", "Planner settings");
 
   return NextResponse.json(settings);
 });

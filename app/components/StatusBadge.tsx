@@ -1,12 +1,10 @@
 const colors: Record<string, string> = {
-  Active: "green",
-  Running: "green",
+  Ongoing: "green",
+  Completed: "indigo",
+  Upcoming: "blue",
+  "In progress": "amber",
+  "Not started": "",
   Healthy: "green",
-  Deploying: "amber",
-  Paused: "amber",
-  Stopped: "",
-  Archived: "",
-  Failed: "red",
   Unavailable: "red",
 };
 

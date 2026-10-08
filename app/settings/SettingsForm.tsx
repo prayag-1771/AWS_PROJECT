@@ -6,17 +6,18 @@ import { useRouter } from "next/navigation";
 type Options = Record<string, string[]>;
 
 const labels: Record<string, [string, string]> = {
-  default_region: ["Default AWS Region", "Pre-selected when a project is created."],
-  default_environment: [
-    "Default Environment",
-    "Pre-selected when a project is created.",
+  default_semester: [
+    "Default Semester",
+    "Pre-selected when a course is created.",
   ],
-  deployment_strategy: [
-    "Default Deployment Strategy",
-    "How new versions of a module replace the old ones.",
+  default_credits: [
+    "Default Credits",
+    "Pre-filled when a course is created.",
   ],
-  monitoring: ["Monitoring", "Collect logs and metrics for new modules."],
-  notifications: ["Notifications", "Which platform events send an alert."],
+  deadline_window: [
+    "Deadline Window",
+    "How far ahead the dashboard counts deadlines as due soon.",
+  ],
 };
 
 export default function SettingsForm({
