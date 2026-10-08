@@ -1,19 +1,27 @@
 import Link from "next/link";
 
-const stats = [
-  { label: "Projects", value: "12", icon: "◈" },
-  { label: "Active Modules", value: "38", icon: "◆" },
-  { label: "Deployments", value: "24", icon: "▲" },
-  { label: "System Health", value: "99.8%", icon: "●" },
-];
-
 const projects = [
-  { name: "E-Commerce Platform", environment: "Production", status: "Active" },
-  { name: "Student Portal", environment: "Development", status: "Active" },
-  { name: "Analytics Engine", environment: "Staging", status: "Deploying" },
+  {
+    name: "E-Commerce Platform",
+    environment: "Production",
+    modules: 8,
+    status: "Active",
+  },
+  {
+    name: "Student Portal",
+    environment: "Development",
+    modules: 5,
+    status: "Active",
+  },
+  {
+    name: "Analytics Engine",
+    environment: "Staging",
+    modules: 11,
+    status: "Deploying",
+  },
 ];
 
-export default function Dashboard() {
+export default function ProjectsPage() {
   return (
     <main className="app">
       <aside className="sidebar">
@@ -23,10 +31,10 @@ export default function Dashboard() {
         </div>
 
         <nav>
-          <Link className="nav-link active" href="/">
+          <Link className="nav-link" href="/">
             Dashboard
           </Link>
-          <Link className="nav-link" href="/projects">
+          <Link className="nav-link active" href="/projects">
             Projects
           </Link>
           <Link className="nav-link" href="/modules">
@@ -46,8 +54,8 @@ export default function Dashboard() {
       <section className="content">
         <header className="topbar">
           <div>
-            <p className="eyebrow">CLOUD PLATFORM</p>
-            <h1>Dashboard</h1>
+            <p className="eyebrow">APPLICATIONS</p>
+            <h1>Projects</h1>
           </div>
 
           <Link className="primary-button" href="/projects/new">
@@ -55,26 +63,22 @@ export default function Dashboard() {
           </Link>
         </header>
 
-        <section className="stats">
-          {stats.map((stat) => (
-            <div className="stat-card" key={stat.label}>
-              <div className="stat-icon">{stat.icon}</div>
-              <div>
-                <p>{stat.label}</p>
-                <h2>{stat.value}</h2>
-              </div>
-            </div>
-          ))}
-        </section>
+        <div className="panel">
+          <div className="toolbar">
+            <input className="search" placeholder="Search projects..." />
 
-        <section className="panel">
-          <div className="panel-header">
-            <div>
-              <h2>Recent Projects</h2>
-              <p>Monitor your cloud applications.</p>
-            </div>
+            <select className="select">
+              <option>All environments</option>
+              <option>Production</option>
+              <option>Staging</option>
+              <option>Development</option>
+            </select>
 
-            <Link href="/projects">View all →</Link>
+            <select className="select">
+              <option>All statuses</option>
+              <option>Active</option>
+              <option>Deploying</option>
+            </select>
           </div>
 
           <div className="project-list">
@@ -82,7 +86,9 @@ export default function Dashboard() {
               <div className="project-row" key={project.name}>
                 <div>
                   <strong>{project.name}</strong>
-                  <span>{project.environment}</span>
+                  <span>
+                    {project.environment} · {project.modules} modules
+                  </span>
                 </div>
 
                 <span
@@ -97,7 +103,7 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-        </section>
+        </div>
       </section>
     </main>
   );
