@@ -17,6 +17,7 @@ export async function logActivity(
   entityName: string
 ) {
   try {
+    await ensureDatabase();
     await pool.query(
       "INSERT INTO activity (action, entity, entity_name) VALUES ($1, $2, $3)",
       [action, entity, entityName.slice(0, 200)]

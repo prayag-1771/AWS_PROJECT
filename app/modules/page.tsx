@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { modules } from "@/lib/modules";
-import StoragePanel from "./StoragePanel";
 
 export default function ModulesPage() {
   return (
@@ -52,7 +50,6 @@ export default function ModulesPage() {
           </div>
         </div>
 
-        <StoragePanel />
     </>
   );
 }

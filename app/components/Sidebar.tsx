@@ -8,6 +8,7 @@ const links = [
   { href: "/", label: "Dashboard", icon: "dashboard" },
   { href: "/projects", label: "Projects", icon: "projects" },
   { href: "/modules", label: "Modules", icon: "modules" },
+  { href: "/storage", label: "Storage", icon: "storage" },
   { href: "/settings", label: "Settings", icon: "settings" },
 ];
 

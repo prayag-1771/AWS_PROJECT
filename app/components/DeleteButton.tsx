@@ -8,12 +8,14 @@ export default function DeleteButton({
   url,
   confirmText,
   redirectTo,
+  onDeleted,
   label = "Delete",
   small = false,
 }: {
   url: string;
   confirmText: string;
   redirectTo?: string;
+  onDeleted?: () => void;
   label?: string;
   small?: boolean;
 }) {
@@ -41,6 +43,7 @@ export default function DeleteButton({
       router.push(redirectTo);
     }
 
+    onDeleted?.();
     router.refresh();
     setDeleting(false);
   }
