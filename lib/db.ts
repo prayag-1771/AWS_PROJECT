@@ -1,4 +1,7 @@
-import { Pool } from "pg";
+import { Pool, types } from "pg";
+
+// TIMESTAMP columns hold UTC; read them as UTC whatever the server's time zone.
+types.setTypeParser(types.builtins.TIMESTAMP, (value) => new Date(`${value}Z`));
 
 const pool = new Pool({
   host: process.env.DB_HOST,
