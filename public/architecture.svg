@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="CloudNativeHub AWS architecture">
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif}
+  .t{font-size:17px;fill:#1f2937;font-weight:700}
+  .s{font-size:14px;fill:#374151}
+  .lbl{font-size:15px;font-weight:700}
+  .note{font-size:13px;fill:#4b5563;font-style:italic}
+  .ar{stroke:#374151;stroke-width:2.2;fill:none;marker-end:url(#a)}
+  .ard{stroke:#6b7280;stroke-width:2;fill:none;stroke-dasharray:7 5;marker-end:url(#a)}
+  </style>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker>
+  </defs>
+
+  <!-- users -->
+  <rect x="560" y="16" width="200" height="50" rx="8" fill="#f3f4f6" stroke="#374151" stroke-width="2"/>
+  <text x="660" y="47" text-anchor="middle" class="t">Users (browser)</text>
+  <path class="ar" d="M660,66 L660,128"/>
+  <text x="672" y="88" class="s">HTTP :80</text>
+
+  <!-- region -->
+  <rect x="30" y="96" width="1540" height="884" rx="10" fill="none" stroke="#111827" stroke-width="2"/>
+  <text x="46" y="120" class="lbl" fill="#111827">AWS Cloud — Region ap-south-1 (Mumbai)</text>
+
+  <!-- vpc -->
+  <rect x="60" y="150" width="1040" height="806" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="76" y="176" class="lbl" fill="#6d28d9">VPC cloudnativehub-vpc — 10.0.0.0/16</text>
+
+  <!-- igw -->
+  <rect x="560" y="130" width="200" height="40" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="660" y="156" text-anchor="middle" class="t">Internet Gateway</text>
+  <path class="ar" d="M660,170 L660,298"/>
+
+  <!-- AZs -->
+  <rect x="90" y="196" width="480" height="740" rx="8" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-dasharray="8 5"/>
+  <text x="104" y="218" class="lbl" fill="#4b5563">Availability Zone ap-south-1a</text>
+  <rect x="590" y="196" width="480" height="740" rx="8" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-dasharray="8 5"/>
+  <text x="1056" y="218" text-anchor="end" class="lbl" fill="#4b5563">Availability Zone ap-south-1b</text>
+
+  <!-- public subnets -->
+  <rect x="110" y="232" width="440" height="222" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="124" y="254" class="lbl" fill="#047857">Public subnet 1 — 10.0.1.0/24</text>
+  <rect x="610" y="232" width="440" height="222" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="1036" y="254" text-anchor="end" class="lbl" fill="#047857">Public subnet 2 — 10.0.11.0/24</text>
+
+  <!-- alb -->
+  <rect x="380" y="300" width="560" height="64" rx="8" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2"/>
+  <text x="660" y="327" text-anchor="middle" class="t">Application Load Balancer — cloudnativehub-alb</text>
+  <text x="660" y="349" text-anchor="middle" class="s">alb-sg: 80/443 from Internet · listener :80 → target group :3000</text>
+
+  <!-- nat -->
+  <rect x="130" y="384" width="230" height="56" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="245" y="408" text-anchor="middle" class="t">NAT Gateway</text>
+  <text x="245" y="428" text-anchor="middle" class="s">outbound only</text>
+  <path class="ar" d="M300,384 C300,300 420,200 558,156"/>
+
+  <!-- private subnets -->
+  <rect x="110" y="474" width="440" height="442" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="124" y="904" class="lbl" fill="#1d4ed8">Private subnet 1 — 10.0.2.0/24</text>
+  <rect x="610" y="474" width="440" height="442" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="1036" y="904" text-anchor="end" class="lbl" fill="#1d4ed8">Private subnet 2 — 10.0.12.0/24</text>
+
+  <!-- ecs service -->
+  <rect x="150" y="528" width="860" height="136" rx="8" fill="none" stroke="#ea580c" stroke-width="1.8" stroke-dasharray="8 5"/>
+  <text x="366" y="688" class="lbl" fill="#c2410c">ECS service cloudnativehub-service (Fargate) · app-sg: 3000 from alb-sg only</text>
+  <rect x="180" y="548" width="320" height="98" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="340" y="576" text-anchor="middle" class="t">Fargate task (running)</text>
+  <text x="340" y="598" text-anchor="middle" class="s">Next.js container · port 3000</text>
+  <text x="340" y="618" text-anchor="middle" class="s">0.25 vCPU · 512 MB · no public IP</text>
+  <rect x="680" y="548" width="300" height="98" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="830" y="576" text-anchor="middle" class="t">Scale-out capacity</text>
+  <text x="830" y="598" text-anchor="middle" class="s">Auto Scaling: 1 – 4 tasks</text>
+  <text x="830" y="618" text-anchor="middle" class="s">target 70% average CPU</text>
+
+  <path class="ar" d="M520,364 L390,546"/>
+  <path class="ard" d="M740,364 L770,546"/>
+  <path class="ar" d="M230,548 L230,442"/>
+  <text x="240" y="468" class="s">HTTPS 443</text>
+
+  <!-- rds -->
+  <rect x="180" y="756" width="320" height="110" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="340" y="784" text-anchor="middle" class="t">Amazon RDS PostgreSQL</text>
+  <text x="340" y="806" text-anchor="middle" class="s">cloudnativehub-db · db.t4g.micro</text>
+  <text x="340" y="826" text-anchor="middle" class="s">encrypted · automated backups</text>
+  <text x="340" y="846" text-anchor="middle" class="s">db-sg: 5432 from app-sg only</text>
+  <rect x="680" y="756" width="300" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="830" y="790" text-anchor="middle" class="t">DB subnet group member</text>
+  <text x="830" y="814" text-anchor="middle" class="s">Multi-AZ standby location</text>
+  <text x="830" y="834" text-anchor="middle" class="s">(production extension)</text>
+  <path class="ar" d="M340,646 L340,754"/>
+  <text x="352" y="728" class="s">PostgreSQL 5432 (TLS)</text>
+
+  <!-- regional services -->
+  <text x="1340" y="176" text-anchor="middle" class="lbl" fill="#111827">Regional AWS services</text>
+  <text x="1340" y="196" text-anchor="middle" class="note">reached from tasks through the NAT Gateway</text>
+
+  <g>
+    <rect x="1140" y="212" width="400" height="74" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+    <text x="1340" y="242" text-anchor="middle" class="t">Amazon ECR</text>
+    <text x="1340" y="264" text-anchor="middle" class="s">repository cloudnativehub · image :latest</text>
+
+    <rect x="1140" y="304" width="400" height="74" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="1340" y="334" text-anchor="middle" class="t">Amazon S3 (private bucket)</text>
+    <text x="1340" y="356" text-anchor="middle" class="s">versioning · SSE-S3 · Block Public Access</text>
+
+    <rect x="1140" y="396" width="400" height="74" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="1340" y="426" text-anchor="middle" class="t">SSM Parameter Store</text>
+    <text x="1340" y="448" text-anchor="middle" class="s">DB password as SecureString</text>
+
+    <rect x="1140" y="488" width="400" height="74" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="1340" y="518" text-anchor="middle" class="t">Amazon CloudWatch</text>
+    <text x="1340" y="540" text-anchor="middle" class="s">logs /ecs/cloudnativehub · metrics · 5 alarms</text>
+
+    <path class="ar" d="M1340,562 L1340,596"/>
+    <rect x="1140" y="598" width="400" height="74" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="1340" y="628" text-anchor="middle" class="t">Amazon SNS → e-mail</text>
+    <text x="1340" y="650" text-anchor="middle" class="s">topic cloudnativehub-alerts</text>
+
+    <rect x="1140" y="690" width="400" height="74" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+    <text x="1340" y="720" text-anchor="middle" class="t">Application Auto Scaling</text>
+    <text x="1340" y="742" text-anchor="middle" class="s">adjusts ECS desired count (1 – 4)</text>
+
+    <rect x="1140" y="782" width="400" height="74" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="1340" y="812" text-anchor="middle" class="t">AWS IAM</text>
+    <text x="1340" y="834" text-anchor="middle" class="s">task execution role · task role (least privilege)</text>
+  </g>
+
+  <text x="1340" y="892" text-anchor="middle" class="note">Solid arrows: live traffic paths</text>
+  <text x="1340" y="912" text-anchor="middle" class="note">Dashed boxes: capacity not running in the demo</text>
+</svg>
