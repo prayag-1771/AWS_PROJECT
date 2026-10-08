@@ -1,55 +1,49 @@
-import { modules } from "@/lib/modules";
+import Link from "next/link";
+import Icon from "../components/Icon";
+import PageHeader from "../components/PageHeader";
+import ModulesBrowser from "./ModulesBrowser";
+import { listModules } from "@/lib/modules";
 
-export default function ModulesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ModulesPage() {
+  const modules = await listModules();
+
   return (
     <>
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">SERVICES</p>
-            <h1>Modules</h1>
-          </div>
-        </header>
+      <PageHeader
+        eyebrow="Services"
+        title="Modules"
+        subtitle="The building blocks of every project, each with its own architecture design."
+      >
+        <Link className="primary-button" href="/modules/new">
+          <Icon name="plus" size={16} />
+          New Module
+        </Link>
+      </PageHeader>
 
-        <div className="panel">
-          <div className="toolbar">
-            <input className="search" placeholder="Search modules..." />
-
-            <select className="select">
-              <option>All types</option>
-              <option>API</option>
-              <option>Microservice</option>
-              <option>Worker</option>
-            </select>
-
-            <select className="select">
-              <option>All statuses</option>
-              <option>Running</option>
-              <option>Stopped</option>
-            </select>
-          </div>
-
-          <div className="project-list">
-            {modules.map(([name, type, status]) => (
-              <div className="project-row" key={name}>
-                <div>
-                  <strong>{name}</strong>
-                  <span>{type}</span>
-                </div>
-
-                <span
-                  className={
-                    status === "Running"
-                      ? "status active-status"
-                      : "status deploy-status"
-                  }
-                >
-                  ● {status}
-                </span>
-              </div>
-            ))}
+      {modules.length === 0 ? (
+        <div className="panel" style={{ marginTop: 0 }}>
+          <div className="empty-state">
+            <div className="empty-icon">
+              <Icon name="modules" size={22} />
+            </div>
+            <strong>No modules yet</strong>
+            <span>
+              Add a module to a project and choose how it is deployed, secured
+              and scaled.
+            </span>
+            <div className="empty-actions">
+              <Link className="primary-button" href="/modules/new">
+                <Icon name="plus" size={16} />
+                New Module
+              </Link>
+            </div>
           </div>
         </div>
-
+      ) : (
+        <ModulesBrowser modules={modules} />
+      )}
     </>
   );
 }

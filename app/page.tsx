@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listProjects, Project } from "@/lib/projects";
-import { modules } from "@/lib/modules";
+import { listModules } from "@/lib/modules";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +17,9 @@ async function loadProjects(): Promise<Project[] | null> {
 export default async function Dashboard() {
   const projects = await loadProjects();
 
-  const activeModules = modules.filter(
-    ([, , status]) => status === "Running"
-  ).length;
+  const activeModules = projects
+    ? (await listModules()).filter((item) => item.status === "Running").length
+    : 0;
 
   const stats = [
     {
