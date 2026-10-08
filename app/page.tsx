@@ -43,35 +43,7 @@ export default async function Dashboard() {
   const recent = (projects || []).slice(0, 5);
 
   return (
-    <main className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-icon">C</div>
-          <span>CloudNativeHub</span>
-        </div>
-
-        <nav>
-          <Link className="nav-link active" href="/">
-            Dashboard
-          </Link>
-          <Link className="nav-link" href="/projects">
-            Projects
-          </Link>
-          <Link className="nav-link" href="/modules">
-            Modules
-          </Link>
-          <Link className="nav-link" href="/settings">
-            Settings
-          </Link>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <span>● AWS Mumbai</span>
-          <small>ap-south-1</small>
-        </div>
-      </aside>
-
-      <section className="content">
+    <>
         <header className="topbar">
           <div>
             <p className="eyebrow">CLOUD PLATFORM</p>
@@ -146,7 +118,6 @@ export default async function Dashboard() {
             ))}
           </div>
         </section>
-      </section>
-    </main>
+    </>
   );
 }

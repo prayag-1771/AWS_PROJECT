@@ -47,35 +47,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <main className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-icon">C</div>
-          <span>CloudNativeHub</span>
-        </div>
-
-        <nav>
-          <Link className="nav-link" href="/">
-            Dashboard
-          </Link>
-          <Link className="nav-link active" href="/projects">
-            Projects
-          </Link>
-          <Link className="nav-link" href="/modules">
-            Modules
-          </Link>
-          <Link className="nav-link" href="/settings">
-            Settings
-          </Link>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <span>● AWS Mumbai</span>
-          <small>ap-south-1</small>
-        </div>
-      </aside>
-
-      <section className="content">
+    <>
         <header className="topbar">
           <div>
             <p className="eyebrow">APPLICATIONS</p>
@@ -150,7 +122,6 @@ export default function ProjectsPage() {
             ))}
           </div>
         </div>
-      </section>
-    </main>
+    </>
   );
 }

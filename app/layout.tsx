@@ -1,4 +1,5 @@
 import "./globals.css";
+import Sidebar from "./components/Sidebar";
 
 export const metadata = {
   title: "CloudNativeHub",
@@ -12,7 +13,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="app">
+          <Sidebar />
+          <main className="content">{children}</main>
+        </div>
+      </body>
     </html>
   );
 }

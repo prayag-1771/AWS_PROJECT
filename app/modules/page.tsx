@@ -4,35 +4,7 @@ import StoragePanel from "./StoragePanel";
 
 export default function ModulesPage() {
   return (
-    <main className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-icon">C</div>
-          <span>CloudNativeHub</span>
-        </div>
-
-        <nav>
-          <Link className="nav-link" href="/">
-            Dashboard
-          </Link>
-          <Link className="nav-link" href="/projects">
-            Projects
-          </Link>
-          <Link className="nav-link active" href="/modules">
-            Modules
-          </Link>
-          <Link className="nav-link" href="/settings">
-            Settings
-          </Link>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <span>● AWS Mumbai</span>
-          <small>ap-south-1</small>
-        </div>
-      </aside>
-
-      <section className="content">
+    <>
         <header className="topbar">
           <div>
             <p className="eyebrow">SERVICES</p>
@@ -81,7 +53,6 @@ export default function ModulesPage() {
         </div>
 
         <StoragePanel />
-      </section>
-    </main>
+    </>
   );
 }
