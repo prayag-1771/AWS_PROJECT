@@ -1,7 +1,12 @@
 import PageHeader from "../../components/PageHeader";
 import ProjectForm from "../ProjectForm";
+import { getSettings } from "@/lib/settings";
 
-export default function NewProjectPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewProjectPage() {
+  const settings = await getSettings();
+
   return (
     <>
       <PageHeader
@@ -11,7 +16,12 @@ export default function NewProjectPage() {
         back={{ href: "/projects", label: "Projects" }}
       />
 
-      <ProjectForm />
+      <ProjectForm
+        defaults={{
+          environment: settings.default_environment,
+          region: settings.default_region,
+        }}
+      />
     </>
   );
 }

@@ -11,7 +11,13 @@ import {
 } from "@/lib/options";
 import type { Project } from "@/lib/projects";
 
-export default function ProjectForm({ project }: { project?: Project }) {
+export default function ProjectForm({
+  project,
+  defaults,
+}: {
+  project?: Project;
+  defaults?: { environment: string; region: string };
+}) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -76,7 +82,10 @@ export default function ProjectForm({ project }: { project?: Project }) {
         <div className="form-grid">
           <label>
             Environment
-            <select name="environment" defaultValue={project?.environment}>
+            <select
+              name="environment"
+              defaultValue={project?.environment ?? defaults?.environment}
+            >
               {ENVIRONMENTS.map((option) => (
                 <option key={option}>{option}</option>
               ))}
@@ -94,7 +103,10 @@ export default function ProjectForm({ project }: { project?: Project }) {
 
           <label>
             AWS Region
-            <select name="region" defaultValue={project?.region}>
+            <select
+              name="region"
+              defaultValue={project?.region ?? defaults?.region}
+            >
               {REGIONS.map((option) => (
                 <option key={option}>{option}</option>
               ))}

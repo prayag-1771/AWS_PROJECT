@@ -1,57 +1,21 @@
-import Link from "next/link";
+import PageHeader from "../components/PageHeader";
+import SettingsForm from "./SettingsForm";
+import { getSettings, SETTING_OPTIONS } from "@/lib/settings";
 
-export default function SettingsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage() {
+  const settings = await getSettings();
+
   return (
     <>
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">PLATFORM</p>
-            <h1>Settings</h1>
-          </div>
-        </header>
+      <PageHeader
+        eyebrow="Platform"
+        title="Settings"
+        subtitle="Defaults applied across the platform, stored in the database."
+      />
 
-        <div className="form-panel">
-          <form>
-            <label>
-              AWS Region
-              <select defaultValue="Mumbai">
-                <option>Mumbai (ap-south-1)</option>
-                <option>Singapore (ap-southeast-1)</option>
-                <option>Virginia (us-east-1)</option>
-              </select>
-            </label>
-
-            <label>
-              Default Deployment Strategy
-              <select defaultValue="Rolling">
-                <option>Rolling Deployment</option>
-                <option>Blue / Green</option>
-                <option>Canary</option>
-              </select>
-            </label>
-
-            <label>
-              Monitoring
-              <select defaultValue="Enabled">
-                <option>Enabled</option>
-                <option>Disabled</option>
-              </select>
-            </label>
-
-            <label>
-              Notifications
-              <select defaultValue="Important events only">
-                <option>All events</option>
-                <option>Important events only</option>
-                <option>Disabled</option>
-              </select>
-            </label>
-
-            <button className="primary-button" type="button">
-              Save Settings
-            </button>
-          </form>
-        </div>
+      <SettingsForm settings={settings} options={SETTING_OPTIONS} />
     </>
   );
 }
