@@ -9,6 +9,7 @@ import TopicList from "../TopicList";
 import { getModule } from "@/lib/modules";
 import { progressStatus } from "@/lib/progress";
 import { listTopics } from "@/lib/topics";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,14 +18,15 @@ export default async function ModulePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await requireUser();
   const id = Number((await params).id);
-  const current = Number.isInteger(id) && id > 0 ? await getModule(id) : null;
+  const current = Number.isInteger(id) && id > 0 ? await getModule(user.sub, id) : null;
 
   if (!current) {
     notFound();
   }
 
-  const topics = await listTopics(current.id);
+  const topics = await listTopics(user.sub, current.id);
 
   return (
     <>

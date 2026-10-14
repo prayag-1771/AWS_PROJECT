@@ -12,6 +12,7 @@ export type Activity = {
 // Activity is a convenience feed, so a failure to record it must never
 // fail the request that triggered it.
 export async function logActivity(
+  owner: string,
   action: string,
   entity: string,
   entityName: string
@@ -19,20 +20,25 @@ export async function logActivity(
   try {
     await ensureDatabase();
     await pool.query(
-      "INSERT INTO activity (action, entity, entity_name) VALUES ($1, $2, $3)",
-      [action, entity, entityName.slice(0, 200)]
+      `INSERT INTO activity (owner, action, entity, entity_name)
+       VALUES ($1, $2, $3, $4)`,
+      [owner, action, entity, entityName.slice(0, 200)]
     );
   } catch (error) {
     console.error(error);
   }
 }
 
-export async function listActivity(limit = 8): Promise<Activity[]> {
+export async function listActivity(
+  owner: string,
+  limit = 8
+): Promise<Activity[]> {
   await ensureDatabase();
 
   const result = await pool.query(
-    "SELECT * FROM activity ORDER BY created_at DESC, id DESC LIMIT $1",
-    [limit]
+    `SELECT id, action, entity, entity_name, created_at FROM activity
+     WHERE owner = $1 ORDER BY created_at DESC, id DESC LIMIT $2`,
+    [owner, limit]
   );
 
   return result.rows;

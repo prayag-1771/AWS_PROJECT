@@ -5,13 +5,15 @@ import PageHeader from "../components/PageHeader";
 import { listCourses } from "@/lib/courses";
 import { listDeadlines } from "@/lib/deadlines";
 import { describeDeadline } from "@/lib/progress";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function DeadlinesPage() {
+  const user = await requireUser();
   const [courses, deadlines] = await Promise.all([
-    listCourses(),
-    listDeadlines(),
+    listCourses(user.sub),
+    listDeadlines(user.sub),
   ]);
 
   const items = deadlines.map(describeDeadline);

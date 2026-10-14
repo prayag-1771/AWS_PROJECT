@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 export class ApiError extends Error {
   status: number;
+  code?: string;
 
   constructor(message: string, status = 400) {
     super(message);
@@ -20,7 +21,7 @@ export function handle<A extends unknown[]>(
     } catch (error) {
       if (error instanceof ApiError) {
         return NextResponse.json(
-          { error: error.message },
+          { error: error.message, code: error.code },
           { status: error.status }
         );
       }

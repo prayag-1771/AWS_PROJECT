@@ -11,6 +11,7 @@ import { getCourse } from "@/lib/courses";
 import { listDeadlines } from "@/lib/deadlines";
 import { listModules } from "@/lib/modules";
 import { describeDeadline, progressStatus } from "@/lib/progress";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -19,16 +20,17 @@ export default async function CoursePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await requireUser();
   const id = Number((await params).id);
-  const course = Number.isInteger(id) && id > 0 ? await getCourse(id) : null;
+  const course = Number.isInteger(id) && id > 0 ? await getCourse(user.sub, id) : null;
 
   if (!course) {
     notFound();
   }
 
   const [modules, deadlines] = await Promise.all([
-    listModules(course.id),
-    listDeadlines(course.id),
+    listModules(user.sub, course.id),
+    listDeadlines(user.sub, course.id),
   ]);
 
   const hours = modules.reduce((sum, item) => sum + item.planned_hours, 0);

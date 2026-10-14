@@ -25,10 +25,26 @@ async function timed(run: () => Promise<unknown>) {
 
 // Live checks of the services the application depends on.
 export async function systemChecks(): Promise<Check[]> {
-  const [database, storage] = await Promise.all([
+  const poolId = process.env.COGNITO_USER_POOL_ID;
+  const region = process.env.AWS_REGION || "ap-south-1";
+
+  const [database, storage, identity] = await Promise.all([
     timed(() => pool.query("SELECT 1")),
     bucket
       ? timed(() => s3.send(new HeadBucketCommand({ Bucket: bucket })))
+      : Promise.resolve({ healthy: false, detail: "Not configured" }),
+    // The user pool's public signing keys, which sessions are verified with.
+    poolId
+      ? timed(async () => {
+          const response = await fetch(
+            `https://cognito-idp.${region}.amazonaws.com/${poolId}/.well-known/jwks.json`,
+            { cache: "no-store" }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Cognito returned ${response.status}`);
+          }
+        })
       : Promise.resolve({ healthy: false, detail: "Not configured" }),
   ]);
 
@@ -41,5 +57,6 @@ export async function systemChecks(): Promise<Check[]> {
     },
     { name: "Database", service: "Amazon RDS for PostgreSQL", ...database },
     { name: "Object storage", service: "Amazon S3", ...storage },
+    { name: "Authentication", service: "Amazon Cognito", ...identity },
   ];
 }

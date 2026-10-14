@@ -139,12 +139,12 @@ function plusDays(days: number) {
   return date.toISOString().slice(0, 10);
 }
 
-export async function seedSampleData() {
+export async function seedSampleData(owner: string) {
   for (const sample of samples) {
-    const courseId = await createCourse(sample.course);
+    const courseId = await createCourse(owner, sample.course);
 
     for (const [index, [name, hours, topics, done]] of sample.modules.entries()) {
-      const moduleId = await createModule({
+      const moduleId = await createModule(owner, {
         course_id: courseId,
         position: index + 1,
         name,
@@ -161,7 +161,7 @@ export async function seedSampleData() {
     }
 
     for (const [title, type, days, done] of sample.deadlines) {
-      await createDeadline({
+      await createDeadline(owner, {
         course_id: courseId,
         title,
         type,

@@ -15,6 +15,10 @@ export async function initDatabase() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+    ALTER TABLE courses ADD COLUMN IF NOT EXISTS owner VARCHAR(64);
+
+    CREATE INDEX IF NOT EXISTS courses_owner_idx ON courses (owner);
+
     CREATE TABLE IF NOT EXISTS course_modules (
       id SERIAL PRIMARY KEY,
       course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -63,7 +67,27 @@ export async function initDatabase() {
       entity_name VARCHAR(200) NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+    ALTER TABLE activity ADD COLUMN IF NOT EXISTS owner VARCHAR(64);
+
+    CREATE INDEX IF NOT EXISTS activity_owner_idx ON activity (owner);
   `);
+
+  // Data created before sign-in existed is handed to one existing account.
+  const legacy = process.env.LEGACY_OWNER;
+
+  if (legacy) {
+    await pool.query("UPDATE courses SET owner = $1 WHERE owner IS NULL", [
+      legacy,
+    ]);
+    await pool.query("UPDATE activity SET owner = $1 WHERE owner IS NULL", [
+      legacy,
+    ]);
+    await pool.query(
+      "UPDATE settings SET key = $1 || ':' || key WHERE position(':' in key) = 0",
+      [legacy]
+    );
+  }
 }
 
 let ready: Promise<void> | null = null;

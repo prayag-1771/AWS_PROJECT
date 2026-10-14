@@ -19,22 +19,35 @@ export const DEFAULT_SETTINGS: Settings = {
   deadline_window: "7 days",
 };
 
-export async function getSettings(): Promise<Settings> {
+// Each student's settings are stored under keys prefixed with their user ID.
+function fullKey(owner: string, key: string) {
+  return `${owner}:${key}`;
+}
+
+export async function getSettings(owner: string): Promise<Settings> {
   await ensureDatabase();
 
-  const result = await pool.query("SELECT key, value FROM settings");
+  const result = await pool.query(
+    "SELECT key, value FROM settings WHERE key = ANY($1)",
+    [KEYS.map((key) => fullKey(owner, key))]
+  );
   const settings = { ...DEFAULT_SETTINGS };
 
   for (const row of result.rows) {
-    if (KEYS.includes(row.key)) {
-      settings[row.key as keyof Settings] = row.value;
+    const key = row.key.slice(owner.length + 1) as keyof Settings;
+
+    if (KEYS.includes(key)) {
+      settings[key] = row.value;
     }
   }
 
   return settings;
 }
 
-export async function saveSettings(body: Record<string, unknown>) {
+export async function saveSettings(
+  owner: string,
+  body: Record<string, unknown>
+) {
   await ensureDatabase();
 
   for (const key of KEYS) {
@@ -49,9 +62,9 @@ export async function saveSettings(body: Record<string, unknown>) {
     await pool.query(
       `INSERT INTO settings (key, value) VALUES ($1, $2)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-      [key, body[key]]
+      [fullKey(owner, key), body[key]]
     );
   }
 
-  return getSettings();
+  return getSettings(owner);
 }

@@ -37,56 +37,84 @@ function values(input: CourseInput) {
   ];
 }
 
-export async function listCourses(): Promise<Course[]> {
+export async function listCourses(owner: string): Promise<Course[]> {
   await ensureDatabase();
 
   const result = await pool.query(
-    `${SELECT} ORDER BY c.created_at DESC, c.id DESC`
+    `${SELECT} WHERE c.owner = $1 ORDER BY c.created_at DESC, c.id DESC`,
+    [owner]
   );
 
   return result.rows;
 }
 
-export async function getCourse(id: number): Promise<Course | null> {
+export async function getCourse(
+  owner: string,
+  id: number
+): Promise<Course | null> {
   await ensureDatabase();
 
-  const result = await pool.query(`${SELECT} WHERE c.id = $1`, [id]);
+  const result = await pool.query(
+    `${SELECT} WHERE c.id = $1 AND c.owner = $2`,
+    [id, owner]
+  );
 
   return result.rows[0] || null;
 }
 
-export async function createCourse(input: CourseInput): Promise<number> {
+export async function ownsCourse(owner: string, id: number) {
+  await ensureDatabase();
+
+  const result = await pool.query(
+    "SELECT 1 FROM courses WHERE id = $1 AND owner = $2",
+    [id, owner]
+  );
+
+  return result.rowCount === 1;
+}
+
+export async function createCourse(
+  owner: string,
+  input: CourseInput
+): Promise<number> {
   await ensureDatabase();
 
   const result = await pool.query(
     `INSERT INTO courses
-     (name, code, instructor, semester, credits, status, description)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     (name, code, instructor, semester, credits, status, description, owner)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING id`,
-    values(input)
+    [...values(input), owner]
   );
 
   return result.rows[0].id;
 }
 
-export async function updateCourse(id: number, input: CourseInput) {
+export async function updateCourse(
+  owner: string,
+  id: number,
+  input: CourseInput
+) {
   await ensureDatabase();
 
   await pool.query(
     `UPDATE courses
      SET name = $1, code = $2, instructor = $3, semester = $4, credits = $5,
          status = $6, description = $7, updated_at = CURRENT_TIMESTAMP
-     WHERE id = $8`,
-    [...values(input), id]
+     WHERE id = $8 AND owner = $9`,
+    [...values(input), id, owner]
   );
 }
 
-export async function deleteCourse(id: number): Promise<string | null> {
+export async function deleteCourse(
+  owner: string,
+  id: number
+): Promise<string | null> {
   await ensureDatabase();
 
   const result = await pool.query(
-    "DELETE FROM courses WHERE id = $1 RETURNING name",
-    [id]
+    "DELETE FROM courses WHERE id = $1 AND owner = $2 RETURNING name",
+    [id, owner]
   );
 
   return result.rows[0]?.name ?? null;

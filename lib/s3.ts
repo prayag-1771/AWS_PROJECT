@@ -17,15 +17,26 @@ export function requireBucket() {
   return bucket;
 }
 
-// Object keys always live directly inside one of the known folders.
-export function parseKey(value: string | null) {
-  const [folder, name, ...rest] = (value || "").split("/");
+// Each student's files live under their own prefix in the bucket.
+export function userPrefix(owner: string) {
+  return `users/${owner}/`;
+}
+
+// Keys are always <prefix><folder>/<file name> inside the student's prefix.
+export function parseKey(owner: string, value: string | null) {
+  const prefix = userPrefix(owner);
+
+  if (!value?.startsWith(prefix)) {
+    throw new ApiError("Unknown file", 404);
+  }
+
+  const [folder, name, ...rest] = value.slice(prefix.length).split("/");
 
   if (!folders.includes(folder) || !name || rest.length > 0) {
     throw new ApiError("Unknown file", 404);
   }
 
-  return `${folder}/${name}`;
+  return { key: value, folder, name };
 }
 
 export default s3;

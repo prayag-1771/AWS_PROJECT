@@ -3,11 +3,13 @@ import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import ModulesBrowser from "./ModulesBrowser";
 import { listModules } from "@/lib/modules";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function ModulesPage() {
-  const modules = await listModules();
+  const user = await requireUser();
+  const modules = await listModules(user.sub);
 
   return (
     <>

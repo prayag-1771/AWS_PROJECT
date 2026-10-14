@@ -7,6 +7,8 @@ import { formatBytes } from "@/lib/format";
 
 type StoredFile = {
   key: string;
+  folder: string;
+  name: string;
   size: number;
   lastModified: string;
 };
@@ -81,7 +83,7 @@ export default function StorageBrowser() {
   }
 
   const visible = files.filter(
-    (file) => !folder || file.key.startsWith(`${folder}/`)
+    (file) => !folder || file.folder === folder
   );
   const totalSize = files.reduce((sum, file) => sum + file.size, 0);
 
@@ -165,16 +167,20 @@ export default function StorageBrowser() {
               </thead>
               <tbody>
                 {visible.map((file) => {
-                  const [fileFolder, name] = file.key.split("/");
                   const url = `/api/files/object?key=${encodeURIComponent(file.key)}`;
 
                   return (
                     <tr key={file.key}>
                       <td>
-                        <strong>{name.replace(/^\d+-/, "")}</strong>
+                        <span className="file-name">
+                          <span className="file-icon">
+                            <Icon name="file" size={17} />
+                          </span>
+                          {file.name}
+                        </span>
                       </td>
                       <td>
-                        <span className="badge indigo">{fileFolder}</span>
+                        <span className="badge indigo">{file.folder}</span>
                       </td>
                       <td>{formatBytes(file.size)}</td>
                       <td>{new Date(file.lastModified).toLocaleString()}</td>
@@ -186,7 +192,7 @@ export default function StorageBrowser() {
                         <DeleteButton
                           small
                           url={url}
-                          confirmText={`Delete "${name.replace(/^\d+-/, "")}"?`}
+                          confirmText={`Delete "${file.name}"?`}
                           onDeleted={() => setReloadKey((value) => value + 1)}
                         />
                       </td>

@@ -1,11 +1,13 @@
 import PageHeader from "../../components/PageHeader";
 import CourseForm from "../CourseForm";
 import { getSettings } from "@/lib/settings";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewCoursePage() {
-  const settings = await getSettings();
+  const user = await requireUser();
+  const settings = await getSettings(user.sub);
 
   return (
     <>

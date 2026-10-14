@@ -60,6 +60,13 @@ const paths: Record<string, ReactNode> = {
       <path d="M12 7v5l3 2" />
     </>
   ),
+  logout: <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11" />,
+  lock: (
+    <>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </>
+  ),
   plus: <path d="M12 5v14M5 12h14" />,
   download: <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />,
   upload: <path d="M12 21V9M7 14l5-5 5 5M5 3h14" />,

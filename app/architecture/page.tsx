@@ -11,6 +11,11 @@ const layers = [
     "The application runs as a container on serverless tasks, released with rolling deployments and automatic rollback.",
   ],
   [
+    "Authentication",
+    "Amazon Cognito",
+    "Students sign up with e-mail verification and sign in; each request is checked against the user pool's signed token, and every student only sees their own data.",
+  ],
+  [
     "Database",
     "Amazon RDS for PostgreSQL",
     "Courses, modules, topics, deadlines and settings are stored in a private, encrypted PostgreSQL instance.",

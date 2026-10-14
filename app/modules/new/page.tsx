@@ -2,6 +2,7 @@ import Link from "next/link";
 import PageHeader from "../../components/PageHeader";
 import ModuleForm from "../ModuleForm";
 import { listCourses } from "@/lib/courses";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,8 @@ export default async function NewModulePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const courses = await listCourses();
+  const user = await requireUser();
+  const courses = await listCourses(user.sub);
   const requested = Number((await searchParams).course);
   const course = courses.find((item) => item.id === requested);
 

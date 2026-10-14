@@ -1,5 +1,6 @@
 import pool from "./db";
-import { missingParent } from "./api";
+import { ApiError, missingParent } from "./api";
+import { ownsCourse } from "./courses";
 import { ensureDatabase } from "./init-db";
 import type { ModuleInput } from "./validate";
 
@@ -33,29 +34,51 @@ function values(input: ModuleInput) {
   ];
 }
 
-export async function listModules(courseId?: number): Promise<Module[]> {
+async function requireCourse(owner: string, courseId: number) {
+  if (!(await ownsCourse(owner, courseId))) {
+    throw new ApiError("Course not found");
+  }
+}
+
+export async function listModules(
+  owner: string,
+  courseId?: number
+): Promise<Module[]> {
   await ensureDatabase();
 
   const result = courseId
     ? await pool.query(
-        `${SELECT} WHERE m.course_id = $1 ORDER BY m.position, m.id`,
-        [courseId]
+        `${SELECT} WHERE c.owner = $1 AND m.course_id = $2
+         ORDER BY m.position, m.id`,
+        [owner, courseId]
       )
-    : await pool.query(`${SELECT} ORDER BY c.name, c.id, m.position, m.id`);
+    : await pool.query(
+        `${SELECT} WHERE c.owner = $1 ORDER BY c.name, c.id, m.position, m.id`,
+        [owner]
+      );
 
   return result.rows;
 }
 
-export async function getModule(id: number): Promise<Module | null> {
+export async function getModule(
+  owner: string,
+  id: number
+): Promise<Module | null> {
   await ensureDatabase();
 
-  const result = await pool.query(`${SELECT} WHERE m.id = $1`, [id]);
+  const result = await pool.query(
+    `${SELECT} WHERE m.id = $1 AND c.owner = $2`,
+    [id, owner]
+  );
 
   return result.rows[0] || null;
 }
 
-export async function createModule(input: ModuleInput): Promise<number> {
-  await ensureDatabase();
+export async function createModule(
+  owner: string,
+  input: ModuleInput
+): Promise<number> {
+  await requireCourse(owner, input.course_id);
 
   const result = await pool
     .query(
@@ -70,26 +93,36 @@ export async function createModule(input: ModuleInput): Promise<number> {
   return result.rows[0].id;
 }
 
-export async function updateModule(id: number, input: ModuleInput) {
-  await ensureDatabase();
+export async function updateModule(
+  owner: string,
+  id: number,
+  input: ModuleInput
+) {
+  await requireCourse(owner, input.course_id);
 
   await pool
     .query(
-      `UPDATE course_modules
+      `UPDATE course_modules m
        SET course_id = $1, position = $2, name = $3, description = $4,
            planned_hours = $5, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $6`,
-      [...values(input), id]
+       FROM courses c
+       WHERE m.id = $6 AND c.id = m.course_id AND c.owner = $7`,
+      [...values(input), id, owner]
     )
     .catch(missingParent("Course"));
 }
 
-export async function deleteModule(id: number): Promise<string | null> {
+export async function deleteModule(
+  owner: string,
+  id: number
+): Promise<string | null> {
   await ensureDatabase();
 
   const result = await pool.query(
-    "DELETE FROM course_modules WHERE id = $1 RETURNING name",
-    [id]
+    `DELETE FROM course_modules m USING courses c
+     WHERE m.id = $1 AND c.id = m.course_id AND c.owner = $2
+     RETURNING m.name`,
+    [id, owner]
   );
 
   return result.rows[0]?.name ?? null;

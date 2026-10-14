@@ -1,30 +1,30 @@
 import Link from "next/link";
 import DeadlineList from "./components/DeadlineList";
 import Icon from "./components/Icon";
-import PageHeader from "./components/PageHeader";
 import ProgressBar from "./components/ProgressBar";
 import SeedButton from "./components/SeedButton";
 import { listActivity } from "@/lib/activity";
+import { requireUser } from "@/lib/auth";
 import { listCourses } from "@/lib/courses";
 import { listDeadlines } from "@/lib/deadlines";
 import { timeAgo } from "@/lib/format";
 import { listModules } from "@/lib/modules";
-import { describeDeadline, percent } from "@/lib/progress";
+import { describeDeadline, percent, today } from "@/lib/progress";
 import { getSettings } from "@/lib/settings";
 import { systemChecks } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
 
 // The dashboard still renders, in a degraded state, when the database is down.
-async function loadData() {
+async function loadData(owner: string) {
   try {
     const [courses, modules, deadlines, activity, settings] = await Promise.all(
       [
-        listCourses(),
-        listModules(),
-        listDeadlines(),
-        listActivity(),
-        getSettings(),
+        listCourses(owner),
+        listModules(owner),
+        listDeadlines(owner),
+        listActivity(owner),
+        getSettings(owner),
       ]
     );
 
@@ -36,8 +36,37 @@ async function loadData() {
   }
 }
 
+const activityIcons: Record<string, string> = {
+  course: "courses",
+  module: "modules",
+  topic: "check",
+  deadline: "deadlines",
+  file: "file",
+  settings: "settings",
+};
+
+function greeting() {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", {
+      hour: "numeric",
+      hour12: false,
+      timeZone: process.env.APP_TIMEZONE || "Asia/Kolkata",
+    }).format(new Date())
+  );
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  return hour < 17 ? "Good afternoon" : "Good evening";
+}
+
 export default async function Dashboard() {
-  const [data, checks] = await Promise.all([loadData(), systemChecks()]);
+  const user = await requireUser();
+  const [data, checks] = await Promise.all([
+    loadData(user.sub),
+    systemChecks(),
+  ]);
 
   const courses = data?.courses || [];
   const modules = data?.modules || [];
@@ -56,6 +85,16 @@ export default async function Dashboard() {
     (item) => item.topic_count > 0 && item.done_count === item.topic_count
   ).length;
   const ongoing = courses.filter((item) => item.status === "Ongoing").length;
+  const up = checks.filter((check) => check.healthy).length;
+
+  const firstName = user.name.split(" ")[0] || user.name;
+  const longDate = new Date(`${today()}T00:00:00Z`).toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   const stats = [
     {
@@ -67,17 +106,10 @@ export default async function Dashboard() {
     },
     {
       label: "Modules Completed",
-      value: data ? `${finished} of ${modules.length}` : "–",
-      note: "all topics ticked off",
+      value: data ? `${finished} / ${modules.length}` : "–",
+      note: "every topic ticked off",
       icon: "modules",
       color: "blue",
-    },
-    {
-      label: "Overall Progress",
-      value: data ? `${percent(done, topics)}%` : "–",
-      note: `${done} of ${topics} topics`,
-      icon: "check",
-      color: "green",
     },
     {
       label: `Due in ${windowDays} Days`,
@@ -86,20 +118,54 @@ export default async function Dashboard() {
       icon: "clock",
       color: overdue ? "red" : "amber",
     },
+    {
+      label: "Platform Health",
+      value: `${up} / ${checks.length}`,
+      note: up === checks.length ? "all services up" : "a service is down",
+      icon: "activity",
+      color: up === checks.length ? "green" : "red",
+    },
   ];
 
   return (
     <>
-      <PageHeader
-        eyebrow="Study Planner"
-        title="Dashboard"
-        subtitle="Your courses, progress and upcoming deadlines at a glance."
-      >
-        <Link className="primary-button" href="/courses/new">
-          <Icon name="plus" size={16} />
-          New Course
-        </Link>
-      </PageHeader>
+      <section className="hero">
+        <div>
+          <p className="eyebrow">{longDate}</p>
+          <h2>
+            {greeting()}, {firstName}
+          </h2>
+          <p>
+            {open.length
+              ? `You have ${open.length} open ${open.length === 1 ? "deadline" : "deadlines"}${
+                  overdue ? `, ${overdue} overdue` : ""
+                }. Keep going.`
+              : "No open deadlines. A good time to get ahead on your topics."}
+          </p>
+          <div className="hero-actions">
+            <Link className="light-button" href="/courses/new">
+              <Icon name="plus" size={16} />
+              New Course
+            </Link>
+            <Link className="ghost-button" href="/deadlines">
+              <Icon name="deadlines" size={16} />
+              View deadlines
+            </Link>
+          </div>
+        </div>
+
+        <div className="hero-meter">
+          <span>Overall progress</span>
+          <strong>{percent(done, topics)}%</strong>
+          <div className="bar">
+            <span style={{ width: `${percent(done, topics)}%` }} />
+          </div>
+          <small>
+            {done} of {topics} topics completed across {courses.length}{" "}
+            {courses.length === 1 ? "course" : "courses"}
+          </small>
+        </div>
+      </section>
 
       <section className="stats">
         {stats.map((stat) => (
@@ -164,6 +230,7 @@ export default async function Dashboard() {
                 <div className="row-main">
                   <strong>{course.name}</strong>
                   <span>
+                    {course.code ? `${course.code} · ` : ""}
                     {course.module_count}{" "}
                     {course.module_count === 1 ? "module" : "modules"} ·{" "}
                     {course.done_count} of {course.topic_count} topics
@@ -179,77 +246,82 @@ export default async function Dashboard() {
           </div>
         </section>
 
-        <div>
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>Upcoming Deadlines</h2>
-                <p>The next things due.</p>
-              </div>
-
-              <Link href="/deadlines">View all →</Link>
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h2>Upcoming Deadlines</h2>
+              <p>The next things due.</p>
             </div>
 
-            <DeadlineList
-              items={open.slice(0, 5)}
-              showCourse
-              emptyText="Nothing is due. Enjoy the break."
-            />
-          </section>
+            <Link href="/deadlines">View all →</Link>
+          </div>
 
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>Platform Health</h2>
-                <p>Checked live on every page load.</p>
-              </div>
-
-              <Link href="/architecture">Architecture →</Link>
-            </div>
-
-            {checks.map((check) => (
-              <div className="health-row" key={check.name}>
-                <span>
-                  <i className={check.healthy ? "dot" : "dot red"} />
-                  <span>
-                    {check.name}
-                    <br />
-                    <small>{check.service}</small>
-                  </span>
-                </span>
-                <small>{check.detail}</small>
-              </div>
-            ))}
-          </section>
-        </div>
+          <DeadlineList
+            items={open.slice(0, 5)}
+            showCourse
+            emptyText="Nothing is due. Enjoy the break."
+          />
+        </section>
       </div>
 
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <h2>Recent Activity</h2>
-            <p>What you have done lately.</p>
+      <div className="grid-2">
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h2>Recent Activity</h2>
+              <p>What you have done lately.</p>
+            </div>
           </div>
-        </div>
 
-        {activity.length === 0 && (
-          <div className="empty-state">
-            <span>Nothing has happened yet.</span>
-          </div>
-        )}
+          {activity.length === 0 && (
+            <div className="empty-state">
+              <span>Nothing has happened yet.</span>
+            </div>
+          )}
 
-        {activity.map((entry) => (
-          <div className="activity-row" key={entry.id}>
-            <span>
-              <strong>{entry.entity_name}</strong>{" "}
-              <span className="muted">
-                · {entry.entity} {entry.action}
+          {activity.map((entry) => (
+            <div className="activity-row" key={entry.id}>
+              <span>
+                <span className="activity-dot">
+                  <Icon name={activityIcons[entry.entity] || "activity"} size={15} />
+                </span>
+                <span>
+                  <strong>{entry.entity_name}</strong>{" "}
+                  <span className="muted">
+                    · {entry.entity} {entry.action}
+                  </span>
+                </span>
               </span>
-            </span>
-            <time>{timeAgo(entry.created_at)}</time>
+              <time>{timeAgo(entry.created_at)}</time>
+            </div>
+          ))}
+        </section>
+
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h2>Platform Health</h2>
+              <p>Checked live from the running container.</p>
+            </div>
+
+            <Link href="/architecture">Architecture →</Link>
           </div>
-        ))}
-      </section>
+
+          {checks.map((check) => (
+            <div className="health-row" key={check.name}>
+              <span>
+                <i className={check.healthy ? "dot" : "dot red"} />
+                <span>
+                  {check.name}
+                  <br />
+                  <small>{check.service}</small>
+                </span>
+              </span>
+              <small>{check.detail}</small>
+            </div>
+          ))}
+        </section>
+      </div>
     </>
   );
 }

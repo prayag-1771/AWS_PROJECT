@@ -4,11 +4,13 @@ import PageHeader from "../components/PageHeader";
 import SeedButton from "../components/SeedButton";
 import CoursesBrowser from "./CoursesBrowser";
 import { listCourses } from "@/lib/courses";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function CoursesPage() {
-  const courses = await listCourses();
+  const user = await requireUser();
+  const courses = await listCourses(user.sub);
 
   return (
     <>

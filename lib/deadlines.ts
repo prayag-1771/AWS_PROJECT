@@ -1,5 +1,6 @@
 import pool from "./db";
-import { missingParent } from "./api";
+import { ApiError, missingParent } from "./api";
+import { ownsCourse } from "./courses";
 import { ensureDatabase } from "./init-db";
 import type { DeadlineInput } from "./validate";
 
@@ -19,29 +20,50 @@ function values(input: DeadlineInput) {
   return [input.course_id, input.title, input.type, input.due_date, input.done];
 }
 
+async function requireCourse(owner: string, courseId: number) {
+  if (!(await ownsCourse(owner, courseId))) {
+    throw new ApiError("Course not found");
+  }
+}
+
 // Open deadlines come first, soonest first; finished ones sink to the bottom.
-export async function listDeadlines(courseId?: number): Promise<Deadline[]> {
+export async function listDeadlines(
+  owner: string,
+  courseId?: number
+): Promise<Deadline[]> {
   await ensureDatabase();
 
   const order = "ORDER BY d.done, d.due_date, d.id";
 
   const result = courseId
-    ? await pool.query(`${SELECT} WHERE d.course_id = $1 ${order}`, [courseId])
-    : await pool.query(`${SELECT} ${order}`);
+    ? await pool.query(
+        `${SELECT} WHERE c.owner = $1 AND d.course_id = $2 ${order}`,
+        [owner, courseId]
+      )
+    : await pool.query(`${SELECT} WHERE c.owner = $1 ${order}`, [owner]);
 
   return result.rows;
 }
 
-export async function getDeadline(id: number): Promise<Deadline | null> {
+export async function getDeadline(
+  owner: string,
+  id: number
+): Promise<Deadline | null> {
   await ensureDatabase();
 
-  const result = await pool.query(`${SELECT} WHERE d.id = $1`, [id]);
+  const result = await pool.query(
+    `${SELECT} WHERE d.id = $1 AND c.owner = $2`,
+    [id, owner]
+  );
 
   return result.rows[0] || null;
 }
 
-export async function createDeadline(input: DeadlineInput): Promise<number> {
-  await ensureDatabase();
+export async function createDeadline(
+  owner: string,
+  input: DeadlineInput
+): Promise<number> {
+  await requireCourse(owner, input.course_id);
 
   const result = await pool
     .query(
@@ -55,25 +77,35 @@ export async function createDeadline(input: DeadlineInput): Promise<number> {
   return result.rows[0].id;
 }
 
-export async function updateDeadline(id: number, input: DeadlineInput) {
-  await ensureDatabase();
+export async function updateDeadline(
+  owner: string,
+  id: number,
+  input: DeadlineInput
+) {
+  await requireCourse(owner, input.course_id);
 
   await pool
     .query(
-      `UPDATE deadlines
+      `UPDATE deadlines d
        SET course_id = $1, title = $2, type = $3, due_date = $4, done = $5
-       WHERE id = $6`,
-      [...values(input), id]
+       FROM courses c
+       WHERE d.id = $6 AND c.id = d.course_id AND c.owner = $7`,
+      [...values(input), id, owner]
     )
     .catch(missingParent("Course"));
 }
 
-export async function deleteDeadline(id: number): Promise<string | null> {
+export async function deleteDeadline(
+  owner: string,
+  id: number
+): Promise<string | null> {
   await ensureDatabase();
 
   const result = await pool.query(
-    "DELETE FROM deadlines WHERE id = $1 RETURNING title",
-    [id]
+    `DELETE FROM deadlines d USING courses c
+     WHERE d.id = $1 AND c.id = d.course_id AND c.owner = $2
+     RETURNING d.title`,
+    [id, owner]
   );
 
   return result.rows[0]?.title ?? null;
