@@ -62,6 +62,8 @@ export type DeadlineItem = {
   done: boolean;
   days: number;
   day: string;
+  month: string;
+  date: string;
   dueText: string;
   dueColor: string;
 };
@@ -88,6 +90,11 @@ export function describeDeadline(deadline: {
     done: deadline.done,
     days,
     day: formatDay(deadline.due_date),
+    month: new Date(`${deadline.due_date}T00:00:00Z`).toLocaleDateString("en-GB", {
+      month: "short",
+      timeZone: "UTC",
+    }),
+    date: String(Number(deadline.due_date.slice(8, 10))),
     dueText: label.text,
     dueColor: label.color,
   };

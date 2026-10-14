@@ -59,6 +59,11 @@ export default function DeadlineList({
             }
           />
 
+          <div className={`date-chip ${item.done ? "green" : item.dueColor}`}>
+            <small>{item.month}</small>
+            <b>{item.date}</b>
+          </div>
+
           <div className="row-main">
             <strong>{item.title}</strong>
             <span>
