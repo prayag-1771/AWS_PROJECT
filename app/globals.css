@@ -139,10 +139,38 @@ p {
   color: #ffffff;
 }
 
+.author {
+  display: grid;
+  gap: 2px;
+  margin-top: auto;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #312e81;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(139, 92, 246, 0.12));
+}
+
+.author small {
+  color: #a5b4fc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.author strong {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.author span {
+  color: #c7d2fe;
+  font-size: 12px;
+}
+
 .sidebar-bottom {
   display: grid;
   gap: 4px;
-  margin-top: auto;
   padding: 14px 12px 0;
   border-top: 1px solid #1e293b;
   color: #dbe3f0;
@@ -1099,6 +1127,7 @@ label.check-row {
   }
 
   .nav-label,
+  .author,
   .sidebar-bottom {
     display: none;
   }

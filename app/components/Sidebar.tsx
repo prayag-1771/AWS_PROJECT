@@ -49,6 +49,12 @@ export default function Sidebar() {
         })}
       </nav>
 
+      <div className="author">
+        <small>Developed by</small>
+        <strong>Prayag Sharma</strong>
+        <span>Reg. No. 24BCE1243</span>
+      </div>
+
       <div className="sidebar-bottom">
         <span>
           <i className="dot" /> AWS Mumbai
